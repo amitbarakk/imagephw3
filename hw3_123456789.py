@@ -48,23 +48,34 @@ def clean_SP_noise_multiple(images):
 
 def add_Gaussian_Noise(im, s):
     gaussian_noise_im = im.copy()
-    gaus = np.random.normal(0,s,im.shape)
-    gaussian_noise_im = gaussian_noise_im+gaus
-    return gaussian_noise_im
+    gaussian_noise = np.random.normal(0, s, im.shape)
+    return np.add(gaussian_noise_im, gaussian_noise)
 
 
 def clean_Gaussian_noise(im, radius, maskSTD):
-    noise_mask = np.random.normal(0, maskSTD, (radius + 1, radius + 1))
+    cleaned_im = np.zeros_like(im)
+    h, w = im.shape
+    for i in range(h):
+        for j in range(w):
+            if i-radius >= 0 and i+radius < h and j+radius < w and j-radius >= 0:
+                X, Y = np.meshgrid(np.arange(i - radius, i + radius + 1), np.arange(j - radius, j + radius + 1))
+                noise_mask = np.e ** ((X-i)**2 + (Y-j)**2 / (-2 * (maskSTD ** 2)))
+                cleaned_im[X, Y] = np.round((sum(noise_mask*im[X, Y])/sum(noise_mask)))
 
-    cleaned_im = convolve2d(im, noise_mask, mode="same")
-
-    return cleaned_im.astype(np.uint8)
+    return np.clip(cleaned_im.astype(np.uint8), 0, 255)
 
 
 def clean_Gaussian_noise_bilateral(im, radius, stdSpatial, stdIntensity):
     bilateral_im = im.copy()
-    # TODO: add implementation
+    h, w = im.shape
+    for i in range(h):
+        for j in range(w):
+            if i - radius >= 0 and i + radius < h and j + radius < w and j - radius >= 0:
+                X, Y = np.meshgrid(np.arange(i - radius, i + radius + 1), np.arange(j - radius, j + radius + 1))
+                gi_mask = np.e ** ((im[X, Y] - im[i, j]) ** 2 / (-2 * (stdIntensity ** 2)))
+                gs_mask = np.e ** ((X - i) ** 2 + (Y - j) ** 2 / (-2 * (stdSpatial ** 2)))
+                bilateral_im[X, Y] = np.round(sum(gs_mask * gi_mask * im[X, Y]) / sum(gs_mask * gi_mask))
 
-    return bilateral_im.astype(np.uint8)
+    return np.clip(bilateral_im.astype(np.uint8), 0, 255)
 
 
