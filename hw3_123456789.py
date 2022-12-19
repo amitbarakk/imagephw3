@@ -54,10 +54,9 @@ def add_Gaussian_Noise(im, s):
 
 
 def clean_Gaussian_noise(im, radius, maskSTD):
-    noise_mask = np.random.normal(0, maskSTD, (radius + 1, radius + 1))
-
+    noise_mask = np.random.normal(0, maskSTD, (radius*2 + 1, radius*2 + 1))
+    noise_mask /= np.sum(noise_mask)
     cleaned_im = convolve2d(im, noise_mask, mode="same")
-
     return cleaned_im.astype(np.uint8)
 
 
