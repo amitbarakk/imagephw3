@@ -1,9 +1,10 @@
-from hw3_318883584 import *
-
+from hw3_318883584_308571447 import *
+import time
 
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
+    t = time.time()
     im = cv2.imread(r'Images/lena.tif')
     im = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
 
@@ -53,3 +54,4 @@ if __name__ == '__main__':
     plt.imshow(clean_bi_im, cmap='gray', vmin=0, vmax=255)
     plt.title('Cleaned using bilateral')
     plt.show()
+    print(time.time()-t)
