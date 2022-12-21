@@ -54,25 +54,16 @@ def add_Gaussian_Noise(im, s):
 
 
 def clean_Gaussian_noise(im, radius, maskSTD):
-    X, Y = np.meshgrid(np.arange(0, 2*radius + 1), np.arange(0, 2*radius + 1))
-    gaussian_mask = np.e ** (((radius-X)**2 + (radius-Y)**2) / (-2 * (maskSTD ** 2)))
-    return convolve2d(im, gaussian_mask/np.sum(gaussian_mask), "same")
+    cleaned_im = np.zeros_like(im)
+    h, w = im.shape
+    for i in range(h):
+        for j in range(w):
+            if i-radius >= 0 and i+radius < h and j+radius < w and j-radius >= 0:
+                X, Y = np.meshgrid(np.arange(i - radius, i + radius + 1), np.arange(j - radius, j + radius + 1))
+                noise_mask = np.e ** ((X-i)**2 + (Y-j)**2 / (-2 * (maskSTD ** 2)))
+                cleaned_im[X, Y] = np.round((sum(noise_mask*im[X, Y])/sum(noise_mask)))
 
-# def clean_Gaussian_noise(im, radius, maskSTD):
-#     cleaned_im = np.zeros_like(im)
-#     h, w = im.shape
-#     for i in range(h):
-#         for j in range(w):
-#             u_l = i-radius if i-radius >= 0 else 0
-#             u_r = i+radius if i+radius < h else h-1
-#             l_l = j-radius if j-radius >= 0 else 0
-#             l_r = j+radius if j+radius < w else w-1
-#             X, Y = np.meshgrid(np.arange(u_l, u_r + 1), np.arange(l_l, l_r + 1))
-#             noise_mask = (np.e ** ((X-i)**2 + (Y-j)**2 / (-2 * (maskSTD ** 2))))
-#             noise_mask /= np.sum(noise_mask)
-#             cleaned_im[i, j] = np.round(np.sum(noise_mask * im[X, Y]))
-#
-#     return np.clip(cleaned_im, 0, 255)
+    return np.clip(cleaned_im.astype(np.uint8), 0, 255)
 
 
 def clean_Gaussian_noise_bilateral(im, radius, stdSpatial, stdIntensity):
