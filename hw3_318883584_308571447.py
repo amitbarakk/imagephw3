@@ -54,18 +54,10 @@ def add_Gaussian_Noise(im, s):
 
 
 def clean_Gaussian_noise(im, radius, maskSTD):
-    cleaned_im = im.copy()
-    h, w = im.shape
-    for i in range(h):
-        for j in range(w):
-            u_l = i - radius if i - radius >= 0 else 0
-            u_r = i + radius + 1 if i + radius < h else h - 1
-            l_l = j - radius if j - radius >= 0 else 0
-            l_r = j + radius + 1 if j + radius < w else w - 1
-            X, Y = np.meshgrid(np.arange(u_l, u_r), np.arange(l_l, l_r))
-            noise_mask = np.e ** (((X-i)**2 + (Y-j)**2) / (-2 * (maskSTD ** 2)))
-            cleaned_im[X, Y] = np.round((np.sum(noise_mask*im[X, Y])/np.sum(noise_mask)))
-
+    X, Y = np.meshgrid(np.arange(0, 2*radius + 1), np.arange(0, 2*radius + 1))
+    gaussian_mask = np.e ** (((radius-X)**2 + (radius-Y)**2) / (-2 * (maskSTD ** 2)))
+    gaussian_mask /= np.sum(gaussian_mask)
+    cleaned_im = convolve2d(im, gaussian_mask, "same")
     return np.clip(cleaned_im.astype(np.uint8), 0, 255)
 
 
